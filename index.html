@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE 2025 ULTIMATE WRAPPED</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;300;500;800;900&display=swap');
+        
+        :root {
+            --accent: #ff3333;
+            --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #000; font-family: 'Kanit', sans-serif; 
+            overflow: hidden; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .wrapper { 
+            height: 100vh; width: 100vw; 
+            display: flex; flex-direction: column; 
+            background: radial-gradient(circle at 50% 50%, #1a0000 0%, #000 100%);
+            position: relative;
+            transition: all 0.5s ease;
+            overflow: hidden;
+        }
+
+        .story-progress {
+            display: flex; gap: 4px; padding: 12px 10px; z-index: 100;
+        }
+        .segment {
+            height: 2px; flex: 1; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;
+        }
+        .segment-fill {
+            height: 100%; width: 0%; background: var(--accent); transition: width 0.3s linear;
+        }
+
+        main { flex: 1; position: relative; width: 100%; }
+
+        .scene { 
+            position: absolute; inset: 0; 
+            display: none; flex-direction: column; 
+            align-items: center; justify-content: center; 
+            padding: 20px; text-align: center; 
+        }
+
+        .active { display: flex !important; animation: zoomIn 0.4s ease-out; }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .sub-tag { color: var(--accent); font-weight: 500; font-size: 0.65rem; letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase; }
+        .main-title { font-weight: 800; font-size: 1.5rem; margin: 0; line-height: 1.1; }
+        .big-data { font-size: 3.5rem; font-weight: 900; color: var(--accent); margin: 2px 0; line-height: 1; letter-spacing: -2px; }
+        .small-desc { font-size: 0.8rem; color: #bbb; font-weight: 300; line-height: 1.3; max-width: 90%; }
+        
+        .data-card {
+            width: 100%; max-width: 300px; background: var(--glass); 
+            border-radius: 12px; padding: 4px; border: 1px solid rgba(255,255,255,0.1);
+            margin-top: 8px;
+        }
+        .row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .row-num { font-weight: 900; color: var(--accent); font-size: 0.7rem; width: 15px; text-align: left; }
+        .row-name { flex: 1; text-align: left; font-weight: 400; font-size: 0.75rem; color: #eee; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .row-val { font-weight: 300; font-size: 0.65rem; color: #888; }
+
+        .chip-container { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; max-width: 300px; }
+        .chip { background: var(--glass); border: 1px solid var(--accent); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.65rem; }
+
+        .start-btn, .export-btn {
+            background: #fff; color: #000; border: none; padding: 14px 30px; 
+            font-weight: 800; font-size: 0.9rem; border-radius: 50px; cursor: pointer;
+            margin-top: 15px; transition: 0.3s;
+        }
+        
+        .btn-loading { background: #ff3333; color: white; cursor: not-allowed; }
+
+        .bless-content {
+            font-size: 0.75rem; line-height: 1.45; text-align: left;
+            font-weight: 300; color: #eee; padding: 15px; 
+            background: var(--glass); border-radius: 12px; border-left: 4px solid var(--accent);
+            max-width: 95%;
+        }
+        .bless-content b { color: var(--accent); font-weight: 800; font-size: 0.95rem; display: block; margin-bottom: 4px; }
+
+        .tap-hint { position: absolute; bottom: 20px; font-size: 0.55rem; opacity: 0.3; letter-spacing: 1px; }
+        #file-upload { display: none; }
+        #hidden-canvas { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper" id="capture-area">
+    <div class="story-progress" id="progress-container"></div>
+    <main id="app">
+        <div class="scene active" id="s-start">
+            <div class="sub-tag">SYSTEM ONLINE</div>
+            <h1 class="main-title">2025<br>THE ULTIMATE WRAPPED</h1>
+            <p class="small-desc" style="margin-top:10px;">วิเคราะห์สถิติปี 2025<br>และสร้างวิดีโอ Story 9:16 ของคุณ</p>
+            <label for="file-upload" class="start-btn">เริ่มวิเคราะห์สันดานดิจิทัล</label>
+            <input type="file" id="file-upload" accept=".json">
+        </div>
+    </main>
+</div>
+
+<canvas id="hidden-canvas" width="1080" height="1920"></canvas>
+
+<script>
+    let currentSlide = 0;
+    let slideDeck = [];
+
+    function censor(n) {
+        if(!n) return "Unknown";
+        let s = String(n).trim().replace(':', '');
+        return s.length <= 2 ? s + "**" : s[0] + "***" + s[s.length-1];
+    }
+
+    function addSlide(html, isClickable = true) {
+        const div = document.createElement('div');
+        div.className = 'scene';
+        div.innerHTML = html + (isClickable ? `<div class="tap-hint">แตะเพื่อดูหน้าถัดไป</div>` : '');
+        if(isClickable) div.onclick = nextSlide;
+        document.getElementById('app').appendChild(div);
+        slideDeck.push(div);
+    }
+
+    function nextSlide() {
+        if(currentSlide < slideDeck.length - 1) {
+            slideDeck[currentSlide].classList.remove('active');
+            currentSlide++;
+            slideDeck[currentSlide].classList.add('active');
+            updateProgress();
+        }
+    }
+
+    function updateProgress() {
+        const fills = document.querySelectorAll('.segment-fill');
+        fills.forEach((f, i) => {
+            f.style.width = i < currentSlide ? '100%' : (i === currentSlide ? '100%' : '0%');
+        });
+    }
+
+    // --- ระบบบันทึกวิดีโอเวอร์ชันใหม่ ---
+    async function recordWrappedVideo() {
+        const btn = document.querySelector('.export-btn');
+        btn.innerText = "🎬 กำลังเตรียมวิดีโอ (ห้ามปิดหน้าจอ)...";
+        btn.classList.add('btn-loading');
+
+        const canvas = document.getElementById('hidden-canvas');
+        const ctx = canvas.getContext('2d');
+        const stream = canvas.captureStream(30); // 30 FPS
+        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+        const chunks = [];
+
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'My2025Wrapped_916.webm'; a.click();
+            btn.innerText = "✅ บันทึกสำเร็จ!";
+            btn.classList.remove('btn-loading');
+        };
+
+        recorder.start();
+
+        // เล่นสไลด์ทีละหน้าเพื่ออัดลงวิดีโอ
+        for(let i = 1; i < slideDeck.length - 1; i++) {
+            // สลับหน้าสไลด์
+            slideDeck[currentSlide].classList.remove('active');
+            currentSlide = i;
+            slideDeck[currentSlide].classList.add('active');
+            updateProgress();
+
+            // รอ Animation จบแล้วจับภาพลง Canvas
+            await new Promise(r => setTimeout(r, 2000)); // หน่วงหน้าละ 2 วินาที
+            const snapshot = await html2canvas(document.getElementById('capture-area'), {
+                scale: 2, // เพิ่มความชัด
+                useCORS: true,
+                backgroundColor: "#000"
+            });
+            ctx.drawImage(snapshot, 0, 0, canvas.width, canvas.height);
+        }
+
+        recorder.stop();
+    }
+
+    document.getElementById('file-upload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            const raw = ev.target.result;
+
+            // --- DATA ANALYSIS ---
+            const vCount = (raw.match(/"Link":/g) || []).length;
+            const totalMins = Math.floor(vCount * 1.5);
+            const totalDays = (totalMins / 1440).toFixed(1);
+            const totalKm = Math.floor((totalMins / 60) * 5);
+            let walkDest = totalKm > 3000 ? "ญี่ปุ่น" : (totalKm > 1000 ? "เวียดนาม" : "เชียงใหม่");
+            const commentCount = (raw.match(/"comment":\s*"/g) || []).length;
+            const contentCount = (raw.match(/"Content":/g) || []).length;
+
+            const blocks = [];
+            const blockRegex = /"UserName":\s*"([^"]+)"/g;
+            let mb;
+            while ((mb = blockRegex.exec(raw)) !== null) {
+                if (raw.substring(mb.index-1000, mb.index+1000).includes("Block List")) blocks.push(mb[1]);
+            }
+            const uniqueBlocks = [...new Set(blocks)];
+
+            const chatMap = {};
+            const chatRegex = /"Chat History with ([^"]+)":/g;
+            let mc;
+            while ((mc = chatRegex.exec(raw)) !== null) {
+                const name = mc[1].replace(':', '').trim();
+                const start = mc.index;
+                const nextMatch = chatRegex.exec(raw);
+                const end = nextMatch ? nextMatch.index : raw.length;
+                chatRegex.lastIndex = mc.index + 1;
+                const chunk = raw.substring(start, end);
+                const count = (chunk.match(/"Content":/g) || []).length;
+                if(count > 0) chatMap[name] = count;
+            }
+            const top5 = Object.entries(chatMap).sort((a,b)=>b[1]-a[1]).slice(0, 5);
+
+            // --- GENERATE SLIDES ---
+            slideDeck = [document.getElementById('s-start')];
+            
+            addSlide(`<div class="sub-tag">SCREEN TIME</div><div class="main-title">ปีนี้คุณไถไป</div><div class="big-data">${totalMins.toLocaleString()}</div><div class="small-desc">นาที... หรือราวๆ ${totalDays} วัน<br>ที่หายไปในหลุมดำดิจิทัล</div>`);
+            addSlide(`<div class="sub-tag">EQUIVALENT</div><div class="main-title">ถ้าคุณออกเดินเท้า</div><div class="small-desc">ด้วยเวลาที่ไถฟีดทั้งหมด คุณจะไปถึง</div><div class="main-title" style="color:var(--accent); font-size:2.2rem; margin-top:5px;">ประเทศ${walkDest}</div><div class="small-desc">ไกลขนาดนี้... ขาไม่ลากก็บุญแล้ว</div>`);
+            addSlide(`<div class="sub-tag">ENGAGEMENT</div><div class="main-title">ยอดนักพิมพ์</div><div class="big-data">${contentCount.toLocaleString()}</div><div class="small-desc">ข้อความแชท และอีก ${commentCount} คอมเมนต์</div>`);
+            addSlide(`<div class="sub-tag">RELATIONSHIP KILLER</div><div class="main-title">คุณตัดคนออกจากชีวิต</div><div class="big-data">${uniqueBlocks.length}</div><div class="small-desc">คน... ที่โดนคุณกดบล็อกไปในปีนี้</div>`);
+            
+            if(uniqueBlocks.length > 0) {
+                let blockHtml = `<div class="sub-tag">THE BLACKLIST</div><div class="main-title" style="font-size:1.2rem">โฉมหน้าผู้ถูกเนรเทศ</div><div class="chip-container">`;
+                uniqueBlocks.slice(0, 10).forEach(b => blockHtml += `<div class="chip">${censor(b)}</div>`);
+                blockHtml += `</div>`;
+                addSlide(blockHtml);
+            }
+
+            addSlide(`<div class="sub-tag">TOP 5 BESTIES</div><div class="main-title" style="font-size:1.2rem">คนที่รอดตายจากการโดนบล็อก</div><div class="data-card">` + 
+                top5.map((item, i) => `<div class="row"><span class="row-num">${i+1}</span><span class="row-name">${item[0]}</span><span class="row-val">${item[1].toLocaleString()} msg</span></div>`).join('') + `</div>`);
+
+            addSlide(`
+                <div class="bless-content">
+                    <b>แด่... ยอดนักไถฟีดผู้มีดวงตาเป็นอาวุธ</b>
+                   ขอให้เจอแต่คลิปของกินที่ไม่ทำให้อ้วน<br>
+                เจอแต่คลิปที่สอนวิธีรวยเร็วแบบไม่ต้องทำงาน<br>
+                เจอแต่มีมที่ทำให้ขำจนกรามค้าง!<br>
+                ขอให้นิ้วโป้งของคุณแข็งแกร่งดุจเหล็กกล้า ไถได้เป็นร้อยล้านคลิป<br>
+                และขอให้แชทที่คุณทักไป ได้รับการตอบกลับใน 3 วินาที<br>
+                สุดท้ายนี้... รักษาสายตาด้วยนะ เพื่อที่จะได้กลับมาไถจอต่อในปีหน้า!
+                </div>
+            `);
+
+            addSlide(`
+                <div class="sub-tag">EXPORT STORY</div>
+                <h1 class="main-title">พร้อมแชร์แล้ว!</h1>
+                <p class="small-desc">ระบบจะสร้างวิดีโอ 9:16 ให้คุณอัตโนมัติ<br>เพื่อนำไปลง Instagram หรือ TikTok Story</p>
+                <button class="export-btnStart export-btn" onclick="recordWrappedVideo()" style="background:var(--accent); color:#fff; width:100%; max-width:280px;">🎥 บันทึกวิดีโอ 9:16</button>
+                <p style="font-size:0.55rem; margin-top:10px; opacity:0.5;">* ใช้เวลาประมาณ 15-20 วินาทีในการเรนเดอร์ *</p>
+            `, false);
+
+            const pc = document.getElementById('progress-container');
+            pc.innerHTML = '';
+            slideDeck.forEach(() => pc.innerHTML += '<div class="segment"><div class="segment-fill"></div></div>');
+            nextSlide();
+        };
+        reader.readAsText(file);
+    });
+</script>
+</body>
+</html>
